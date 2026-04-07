@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Memoir</title>
+<title>Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Spectral:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -538,9 +538,9 @@ main {
 <!-- SETUP -->
 <div id="setup">
   <div class="setup-inner">
-    <div class="setup-wordmark">Memoir</div>
+    <div class="setup-wordmark">Journal</div>
     <div class="setup-sub">voice journal</div>
-    <p class="setup-body">To reflect on your entries, Memoir needs your Anthropic API key. It stays in your browser — never stored anywhere else.</p>
+    <p class="setup-body">To reflect on your entries, Journal needs your Anthropic API key. It stays in your browser — never stored anywhere else.</p>
     <div class="field-label">Anthropic API Key</div>
     <input class="api-input" id="api-input" type="password" placeholder="sk-ant-…" autocomplete="off" />
     <button class="setup-btn" id="setup-btn">Begin →</button>
@@ -552,7 +552,7 @@ main {
 <div id="app">
   <header>
     <div>
-      <div class="wordmark">Memoir</div>
+      <div class="wordmark">Journal</div>
       <div class="header-date" id="header-date"></div>
     </div>
     <nav>
@@ -635,10 +635,10 @@ let finalT = '';
 let interimT = '';
 
 window.addEventListener('DOMContentLoaded', () => {
-  entries = JSON.parse(localStorage.getItem('memoir_entries') || '[]');
+  entries = JSON.parse(localStorage.getItem('journal_entries') || '[]');
   document.getElementById('header-date').textContent =
     new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-  if (localStorage.getItem('memoir_key')) showApp();
+  if (localStorage.getItem('journal_key')) showApp();
   document.getElementById('setup-btn').addEventListener('click', saveKey);
   document.getElementById('api-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
 });
@@ -646,7 +646,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function saveKey() {
   const k = document.getElementById('api-input').value.trim();
   if (!k.startsWith('sk-')) { alert('Please enter a valid Anthropic API key.'); return; }
-  localStorage.setItem('memoir_key', k);
+  localStorage.setItem('journal_key', k);
   showApp();
 }
 
@@ -659,7 +659,7 @@ function showApp() {
 
 function resetKey() {
   if (!confirm('Change your API key?')) return;
-  localStorage.removeItem('memoir_key');
+  localStorage.removeItem('journal_key');
   document.getElementById('app').style.display = 'none';
   document.getElementById('setup').style.display = 'flex';
   document.getElementById('api-input').value = '';
@@ -797,7 +797,7 @@ async function submitEntry() {
     const reflection = await getReflection(text);
     const entry = { id: Date.now(), date: new Date().toISOString(), raw: text, reflection };
     entries.unshift(entry);
-    localStorage.setItem('memoir_entries', JSON.stringify(entries));
+    localStorage.setItem('journal_entries', JSON.stringify(entries));
 
     // Save to Notion in background — non-blocking
     saveToNotion(entry).catch(e => console.warn('Notion:', e));
@@ -811,7 +811,7 @@ async function submitEntry() {
 }
 
 async function getReflection(text) {
-  const key = localStorage.getItem('memoir_key');
+  const key = localStorage.getItem('journal_key');
   const past = entries.slice(0, 5);
   const ctx = past.length ? 'Past entries:\n' + past.map(e => `[${fmtDate(e.date)}]: ${e.raw}`).join('\n\n') + '\n\n' : '';
   const prompt = `${ctx}Today's spoken journal entry:\n"${text}"\n\nYou are a warm, perceptive journal companion. Respond with exactly three labeled sections:\n\n**Reflection:** (2-3 empathetic sentences)\n\n**Pattern:** (one insight or recurring theme, referencing past entries if relevant)\n\n**Question:** (one gentle, open question to carry forward)\n\nBe concise and human. No filler.`;

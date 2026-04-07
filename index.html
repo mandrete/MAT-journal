@@ -1,566 +1,602 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memoir — Voice Journal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Memoir</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Spectral:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-–bg: #0b0a09;
-–surface: #141210;
-–surface2: #1c1916;
-–border: #252018;
-–border2: #352d20;
-–text: #e2d8cc;
-–text2: #9a8a78;
-–text3: #5a5048;
-–accent: #c8a878;
-–accent2: #8a6030;
-–danger: #8a4030;
+  --bg:       #080807;
+  --s1:       #0f0e0c;
+  --s2:       #161410;
+  --s3:       #1e1b16;
+  --border:   #1e1b14;
+  --border2:  #2e2820;
+  --border3:  #403828;
+  --text:     #ddd4c4;
+  --text2:    #8a7e6e;
+  --text3:    #4a4438;
+  --accent:   #c4a06a;
+  --accent2:  #7a5c30;
+  --accent3:  #3a2810;
+  --red2:     #9a4828;
 }
 
-html, body {
-height: 100%;
-background: var(–bg);
-color: var(–text);
-font-family: ‘Cormorant Garamond’, Georgia, serif;
-font-size: 17px;
-line-height: 1.6;
--webkit-font-smoothing: antialiased;
+html { height: 100%; background: var(--bg); }
+
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Spectral', Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* Grain overlay */
-body::before {
-content: ‘’;
-position: fixed;
-inset: 0;
-background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.04’/%3E%3C/svg%3E”);
-pointer-events: none;
-z-index: 999;
-opacity: 0.5;
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
 }
 
-#app { display: flex; flex-direction: column; min-height: 100vh; }
-
-/* API KEY SETUP SCREEN */
-#setup-screen {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-min-height: 100vh;
-padding: 40px 24px;
-animation: fadeIn 0.6s ease;
+/* ── SETUP ── */
+#setup {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  animation: rise 0.7s ease both;
 }
-
-.setup-card {
-max-width: 480px;
-width: 100%;
-background: var(–surface);
-border: 1px solid var(–border2);
-border-radius: 12px;
-padding: 48px 40px;
+.setup-inner { width: 100%; max-width: 420px; }
+.setup-wordmark {
+  font-family: 'Playfair Display', serif;
+  font-size: 44px;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -1px;
+  margin-bottom: 4px;
 }
-
-.setup-card .logo {
-font-size: 28px;
-font-weight: 300;
-letter-spacing: 2px;
-color: var(–accent);
-margin-bottom: 8px;
+.setup-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 52px;
 }
-
-.setup-card .tagline {
-font-size: 14px;
-color: var(–text3);
-font-family: ‘DM Mono’, monospace;
-letter-spacing: 1px;
-margin-bottom: 36px;
+.setup-body {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.8;
+  margin-bottom: 36px;
+  font-style: italic;
 }
-
-.setup-card p {
-font-size: 15px;
-color: var(–text2);
-line-height: 1.7;
-margin-bottom: 24px;
-}
-
-.setup-card a { color: var(–accent); text-decoration: none; border-bottom: 1px solid var(–accent2); }
-
+.setup-body a { color: var(--accent); text-decoration: none; }
 .field-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-color: var(–text3);
-text-transform: uppercase;
-margin-bottom: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 10px;
 }
-
 .api-input {
-width: 100%;
-background: var(–bg);
-border: 1px solid var(–border2);
-border-radius: 6px;
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-font-size: 13px;
-padding: 12px 16px;
-outline: none;
-margin-bottom: 20px;
-transition: border-color 0.2s;
+  width: 100%;
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  padding: 14px 18px;
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
 }
-.api-input:focus { border-color: var(–accent2); }
-
-.btn-primary {
-width: 100%;
-background: var(–surface2);
-border: 1px solid var(–border2);
-color: var(–accent);
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 16px;
-letter-spacing: 1px;
-padding: 13px;
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.2s;
+.api-input:focus { border-color: var(--accent2); }
+.setup-btn {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--border3);
+  color: var(--accent);
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
 }
-.btn-primary:hover { background: #241e14; border-color: var(–accent2); }
-
+.setup-btn:hover { background: var(--s3); }
 .setup-note {
-margin-top: 20px;
-font-size: 12px;
-color: var(–text3);
-font-family: ‘DM Mono’, monospace;
-line-height: 1.6;
+  margin-top: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.7;
 }
+.setup-note a { color: var(--accent); text-decoration: none; }
 
-/* MAIN LAYOUT */
+/* ── APP ── */
+#app { display: none; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
 header {
-padding: 22px 32px 18px;
-border-bottom: 1px solid var(–border);
-display: flex;
-align-items: center;
-justify-content: space-between;
-animation: fadeIn 0.4s ease;
+  padding: 20px 24px 16px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+  animation: rise 0.5s ease both;
 }
-
-.header-left .date {
-font-family: ‘DM Mono’, monospace;
-font-size: 10px;
-letter-spacing: 3px;
-color: var(–text3);
-text-transform: uppercase;
-margin-bottom: 3px;
+.wordmark {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.5px;
 }
-
-.header-left h1 {
-font-size: 22px;
-font-weight: 300;
-letter-spacing: 2px;
-color: var(–accent);
+.header-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-top: 2px;
 }
-
-nav { display: flex; gap: 6px; }
-
-nav button {
-background: transparent;
-border: 1px solid transparent;
-color: var(–text3);
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-text-transform: uppercase;
-padding: 6px 14px;
-border-radius: 4px;
-cursor: pointer;
-transition: all 0.15s;
+nav { display: flex; gap: 4px; align-items: center; }
+.nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 7px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-nav button.active {
-background: var(–surface2);
-border-color: var(–border2);
-color: var(–accent);
+.nav-btn.active { background: var(--s2); border-color: var(--border2); color: var(--accent); }
+.nav-btn:hover:not(.active) { color: var(--text2); }
+.settings-btn {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-size: 16px;
+  padding: 7px 8px;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-nav button:hover:not(.active) { color: var(–text2); }
+.settings-btn:hover { opacity: 0.9; }
 
 main {
-flex: 1;
-max-width: 680px;
-width: 100%;
-margin: 0 auto;
-padding: 44px 32px;
-animation: fadeIn 0.4s ease;
+  flex: 1;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+  padding-bottom: max(48px, env(safe-area-inset-bottom));
 }
 
-/* VIEWS */
-.view { display: none; }
+.view { display: none; animation: rise 0.35s ease both; }
 .view.active { display: block; }
 
-/* RECORD VIEW */
-.record-center {
-display: flex;
-flex-direction: column;
-align-items: center;
-}
+/* ── RECORD VIEW ── */
+#view-record { display: none; flex-direction: column; align-items: center; padding-top: 52px; }
+#view-record.active { display: flex; }
 
 .record-hint {
-font-size: 15px;
-color: var(–text3);
-text-align: center;
-margin-bottom: 52px;
-min-height: 28px;
-font-style: italic;
-transition: color 0.3s;
+  font-family: 'Spectral', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--text3);
+  text-align: center;
+  margin-bottom: 56px;
+  min-height: 26px;
+  transition: color 0.4s;
+  letter-spacing: 0.2px;
 }
+.record-hint.listening { color: var(--text2); }
 
-/* Mic button */
-.mic-wrap {
-position: relative;
-width: 130px;
-height: 130px;
-margin-bottom: 44px;
+.mic-stage {
+  position: relative;
+  width: 152px;
+  height: 152px;
+  margin-bottom: 52px;
+  flex-shrink: 0;
 }
-
-.pulse-ring {
-position: absolute;
-inset: 0;
-border-radius: 50%;
-border: 1px solid rgba(200, 168, 120, 0.25);
-animation: none;
+.mic-glow {
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196,160,106,0.07) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s;
+  pointer-events: none;
 }
-.pulse-ring.active { animation: pulseOut 1.4s ease-out infinite; }
-.pulse-ring:nth-child(2).active { animation-delay: 0.45s; }
-.pulse-ring:nth-child(3).active { animation-delay: 0.9s; }
+.mic-stage.recording .mic-glow { opacity: 1; }
 
-@keyframes pulseOut {
-0% { transform: scale(1); opacity: 0.5; }
-100% { transform: scale(2.4); opacity: 0; }
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(196,160,106,0.18);
+  opacity: 0;
+  pointer-events: none;
+}
+.mic-stage.recording .ring { animation: ringPulse 2s ease-out infinite; }
+.mic-stage.recording .ring:nth-child(2) { animation-delay: 0.65s; }
+.mic-stage.recording .ring:nth-child(3) { animation-delay: 1.3s; }
+@keyframes ringPulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  100% { transform: scale(2.3); opacity: 0; }
 }
 
 #mic-btn {
-position: absolute;
-inset: 0;
-border-radius: 50%;
-background: var(–surface);
-border: 2px solid var(–border2);
-cursor: pointer;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 42px;
-transition: all 0.2s;
-z-index: 1;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--s1);
+  border: 1.5px solid var(--border2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: background 0.3s, border-color 0.3s, transform 0.12s, box-shadow 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
-#mic-btn:hover { background: var(–surface2); border-color: var(–accent2); }
-#mic-btn.recording {
-background: #1e1008;
-border-color: #7a4020;
-box-shadow: 0 0 40px rgba(160, 70, 20, 0.15);
+#mic-btn:active { transform: scale(0.94); }
+.mic-stage.recording #mic-btn {
+  background: var(--accent3);
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 1px var(--accent3), 0 8px 40px rgba(196,160,106,0.10);
 }
 
-/* Waveform bars */
+.mic-icon { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+
+.mic-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+  transition: color 0.3s;
+}
+.mic-stage.recording .mic-label { color: var(--accent2); }
+
 .waveform {
-display: flex;
-align-items: center;
-gap: 4px;
-height: 32px;
-margin-bottom: 28px;
-opacity: 0;
-transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 28px;
+  margin-bottom: 36px;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 .waveform.active { opacity: 1; }
-.wave-bar {
-width: 3px;
-background: var(–accent2);
-border-radius: 2px;
-animation: none;
-height: 4px;
-}
-.waveform.active .wave-bar { animation: wave 0.8s ease-in-out infinite alternate; }
-.wave-bar:nth-child(1) { animation-delay: 0s; }
-.wave-bar:nth-child(2) { animation-delay: 0.1s; }
-.wave-bar:nth-child(3) { animation-delay: 0.2s; }
-.wave-bar:nth-child(4) { animation-delay: 0.3s; }
-.wave-bar:nth-child(5) { animation-delay: 0.15s; }
-.wave-bar:nth-child(6) { animation-delay: 0.05s; }
-.wave-bar:nth-child(7) { animation-delay: 0.25s; }
-.wave-bar:nth-child(8) { animation-delay: 0.35s; }
-.wave-bar:nth-child(9) { animation-delay: 0.1s; }
+.bar { width: 2px; height: 3px; background: var(--accent2); border-radius: 2px; }
+.waveform.active .bar { animation: barAnim 0.9s ease-in-out infinite alternate; }
+.bar:nth-child(1)  { animation-delay: 0.00s; }
+.bar:nth-child(2)  { animation-delay: 0.10s; }
+.bar:nth-child(3)  { animation-delay: 0.20s; }
+.bar:nth-child(4)  { animation-delay: 0.05s; }
+.bar:nth-child(5)  { animation-delay: 0.15s; }
+.bar:nth-child(6)  { animation-delay: 0.25s; }
+.bar:nth-child(7)  { animation-delay: 0.08s; }
+.bar:nth-child(8)  { animation-delay: 0.18s; }
+.bar:nth-child(9)  { animation-delay: 0.12s; }
+.bar:nth-child(10) { animation-delay: 0.22s; }
+.bar:nth-child(11) { animation-delay: 0.03s; }
+@keyframes barAnim { from { height: 3px; } to { height: 22px; } }
 
-@keyframes wave {
-from { height: 4px; }
-to { height: 28px; }
-}
-
-/* Transcript box */
 #transcript-box {
-width: 100%;
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 10px;
-padding: 22px;
-font-size: 16px;
-line-height: 1.8;
-color: #c8c0b4;
-min-height: 90px;
-white-space: pre-wrap;
-margin-bottom: 20px;
-display: none;
+  width: 100%;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  font-family: 'Spectral', serif;
+  font-size: 16px;
+  line-height: 1.85;
+  color: #beb6a6;
+  min-height: 90px;
+  white-space: pre-wrap;
+  margin-bottom: 14px;
+  display: none;
+  animation: rise 0.3s ease both;
 }
-#transcript-box.visible { display: block; }
-#transcript-box .interim { color: var(–text3); font-style: italic; }
+#transcript-box.show { display: block; }
+.interim-text { color: var(--text3); font-style: italic; }
 
+.transcript-footer {
+  width: 100%;
+  margin-bottom: 18px;
+  display: none;
+}
+.transcript-footer.show { display: flex; }
 .word-count {
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-color: var(–text3);
-margin-bottom: 14px;
-align-self: flex-start;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
 }
 
-.action-row {
-display: flex;
-gap: 10px;
-width: 100%;
-display: none;
-}
-.action-row.visible { display: flex; }
+.action-row { display: none; gap: 10px; width: 100%; }
+.action-row.show { display: flex; }
 
 .btn-discard {
-flex: 1;
-background: transparent;
-border: 1px solid var(–border);
-color: var(–text3);
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 15px;
-padding: 11px;
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.15s;
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  font-family: 'Spectral', serif;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.btn-discard:hover { border-color: var(–border2); color: var(–text2); }
+.btn-discard:hover { border-color: var(--border3); color: var(--text2); }
 
 .btn-submit {
-flex: 2;
-background: var(–surface2);
-border: 1px solid var(–border2);
-color: var(–accent);
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 16px;
-letter-spacing: 0.5px;
-padding: 11px;
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.2s;
+  flex: 2.5;
+  background: var(--s2);
+  border: 1px solid var(--border3);
+  color: var(--accent);
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  letter-spacing: 0.3px;
+  padding: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
-.btn-submit:hover:not(:disabled) { background: #241e12; border-color: #7a5828; }
-.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-submit:hover:not(:disabled) { background: var(--s3); border-color: var(--accent2); }
+.btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .error-msg {
-color: #b05040;
-font-family: ‘DM Mono’, monospace;
-font-size: 12px;
-margin-top: 12px;
-text-align: center;
+  margin-top: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--red2);
+  text-align: center;
+  letter-spacing: 0.5px;
 }
 
-/* ENTRY VIEW */
+/* ── ENTRY VIEW ── */
+#view-entry { padding-top: 32px; }
 .back-btn {
-background: transparent;
-border: none;
-color: var(–text3);
-font-family: ‘DM Mono’, monospace;
-font-size: 11px;
-letter-spacing: 2px;
-text-transform: uppercase;
-cursor: pointer;
-padding: 0 0 28px;
-display: flex;
-align-items: center;
-gap: 8px;
-transition: color 0.15s;
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.back-btn:hover { color: var(–text2); }
-
+.back-btn:hover { color: var(--text2); }
 .entry-meta {
-font-family: ‘DM Mono’, monospace;
-font-size: 10px;
-letter-spacing: 3px;
-color: var(–text3);
-text-transform: uppercase;
-margin-bottom: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 14px;
 }
-
 .entry-raw {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 10px;
-padding: 24px;
-font-size: 16px;
-line-height: 1.85;
-color: #ccc0b0;
-white-space: pre-wrap;
-margin-bottom: 30px;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 26px;
+  font-family: 'Spectral', serif;
+  font-size: 16px;
+  line-height: 1.9;
+  color: #beb6a6;
+  white-space: pre-wrap;
+  margin-bottom: 36px;
 }
-
-.reflection-block {
-border-left: 2px solid var(–accent2);
-padding-left: 24px;
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
 }
-
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
 .reflection-label {
-font-family: ‘DM Mono’, monospace;
-font-size: 10px;
-letter-spacing: 3px;
-color: var(–accent2);
-text-transform: uppercase;
-margin-bottom: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent2);
+  text-transform: uppercase;
+  margin-bottom: 18px;
 }
-
 .reflection-text {
-font-size: 15px;
-line-height: 1.9;
-color: #a89878;
-white-space: pre-wrap;
+  font-family: 'Spectral', serif;
+  font-size: 15px;
+  line-height: 2;
+  color: var(--text2);
+  white-space: pre-wrap;
 }
 
-/* ARCHIVE VIEW */
+/* ── ARCHIVE VIEW ── */
+#view-archive { padding-top: 32px; }
+.search-wrap { position: relative; margin-bottom: 24px; }
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 14px;
+  pointer-events: none;
+}
 .search-input {
-width: 100%;
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 6px;
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-font-size: 13px;
-padding: 11px 16px;
-outline: none;
-margin-bottom: 24px;
-transition: border-color 0.2s;
+  width: 100%;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 12px 16px 12px 38px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  letter-spacing: 0.5px;
 }
-.search-input:focus { border-color: var(–border2); }
-
+.search-input:focus { border-color: var(--border2); }
+.search-input::placeholder { color: var(--text3); }
+.archive-list { display: flex; flex-direction: column; gap: 8px; }
 .entry-card {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 8px;
-padding: 18px 22px;
-cursor: pointer;
-margin-bottom: 10px;
-transition: all 0.15s;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.entry-card:hover { background: var(–surface2); border-color: var(–border2); }
-
-.entry-card .card-date {
-font-family: ‘DM Mono’, monospace;
-font-size: 10px;
-letter-spacing: 2px;
-color: var(–text3);
-text-transform: uppercase;
-margin-bottom: 8px;
+.entry-card:hover, .entry-card:active { background: var(--s2); border-color: var(--border2); }
+.card-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
-
-.entry-card .card-preview {
-font-size: 14px;
-color: var(–text2);
-line-height: 1.6;
-display: -webkit-box;
--webkit-line-clamp: 2;
--webkit-box-orient: vertical;
-overflow: hidden;
+.card-preview {
+  font-family: 'Spectral', serif;
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-
 .empty-state {
-text-align: center;
-color: var(–text3);
-font-style: italic;
-margin-top: 60px;
-font-size: 16px;
+  text-align: center;
+  font-family: 'Spectral', serif;
+  font-style: italic;
+  color: var(--text3);
+  font-size: 16px;
+  margin-top: 80px;
 }
 
-@keyframes fadeIn {
-from { opacity: 0; transform: translateY(6px); }
-to { opacity: 1; transform: translateY(0); }
+/* ── ANIMATIONS ── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 .loading-dots::after {
-content: ‘’;
-animation: dots 1.2s steps(3, end) infinite;
+  content: '';
+  animation: dots 1.2s steps(3, end) infinite;
 }
 @keyframes dots {
-0%   { content: ‘’; }
-33%  { content: ‘.’; }
-66%  { content: ‘..’; }
-100% { content: ‘…’; }
+  0%   { content: ''; }
+  33%  { content: '.'; }
+  66%  { content: '..'; }
+  100% { content: '...'; }
 }
 </style>
-
 </head>
 <body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="setup-inner">
+    <div class="setup-wordmark">Memoir</div>
+    <div class="setup-sub">voice journal</div>
+    <p class="setup-body">To reflect on your entries, Memoir needs your Anthropic API key. It stays in your browser — never stored anywhere else.</p>
+    <div class="field-label">Anthropic API Key</div>
+    <input class="api-input" id="api-input" type="password" placeholder="sk-ant-…" autocomplete="off" />
+    <button class="setup-btn" id="setup-btn">Begin →</button>
+    <div class="setup-note">Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> — stored locally, never shared.</div>
+  </div>
+</div>
+
+<!-- APP -->
 <div id="app">
-
-  <!-- SETUP SCREEN -->
-
-  <div id="setup-screen">
-    <div class="setup-card">
-      <div class="logo">Memoir</div>
-      <div class="tagline">voice journal</div>
-      <p>To reflect on your entries, Memoir needs your Anthropic API key. It's stored only in your browser — never sent anywhere except directly to Anthropic.</p>
-      <div class="field-label">Anthropic API Key</div>
-      <input class="api-input" id="api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off" />
-      <button class="btn-primary" id="save-key-btn">Begin →</button>
-      <div class="setup-note">
-        Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
-        Stored in localStorage. Never leaves your machine.
-      </div>
+  <header>
+    <div>
+      <div class="wordmark">Memoir</div>
+      <div class="header-date" id="header-date"></div>
     </div>
-  </div>
+    <nav>
+      <button class="nav-btn active" data-view="record" onclick="switchView('record')">Record</button>
+      <button class="nav-btn" data-view="archive" onclick="switchView('archive')">Archive</button>
+      <button class="settings-btn" onclick="resetKey()" title="Change API key">⚙</button>
+    </nav>
+  </header>
 
-  <!-- MAIN APP -->
+  <main>
+    <!-- RECORD -->
+    <div id="view-record" class="view active">
+      <div class="record-hint" id="hint">Tap to begin.</div>
 
-  <div id="main-app" style="display:none; flex-direction:column; min-height:100vh;">
-
-```
-<header>
-  <div class="header-left">
-    <div class="date" id="header-date"></div>
-    <h1>Memoir</h1>
-  </div>
-  <nav>
-    <button class="active" data-view="record" onclick="switchView('record')">● Record</button>
-    <button data-view="archive" onclick="switchView('archive')">Archive</button>
-    <button onclick="resetKey()" style="color:var(--text3);font-size:10px;opacity:0.5;" title="Change API key">⚙</button>
-  </nav>
-</header>
-
-<main>
-
-  <!-- RECORD VIEW -->
-  <div id="view-record" class="view active">
-    <div class="record-center">
-      <div class="record-hint" id="record-hint">Tap the mic and speak freely.</div>
-
-      <div class="mic-wrap">
-        <div class="pulse-ring" id="ring1"></div>
-        <div class="pulse-ring" id="ring2"></div>
-        <div class="pulse-ring" id="ring3"></div>
-        <button id="mic-btn" onclick="toggleRecording()">🎙</button>
+      <div class="mic-stage" id="mic-stage">
+        <div class="mic-glow"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <button id="mic-btn" onclick="toggleRec()" aria-label="Record">
+          <div class="mic-icon">
+            <svg width="34" height="40" viewBox="0 0 34 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="11" y="1" width="12" height="22" rx="6" stroke="#c4a06a" stroke-width="1.4"/>
+              <path d="M5 21c0 6.627 5.373 12 12 12s12-5.373 12-12" stroke="#c4a06a" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="17" y1="33" x2="17" y2="39" stroke="#c4a06a" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="10" y1="39" x2="24" y2="39" stroke="#c4a06a" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <span class="mic-label" id="mic-label">speak</span>
+          </div>
+        </button>
       </div>
 
       <div class="waveform" id="waveform">
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div>
       </div>
 
       <div id="transcript-box"></div>
-      <div class="word-count" id="word-count" style="display:none"></div>
+
+      <div class="transcript-footer" id="transcript-footer">
+        <div class="word-count" id="word-count"></div>
+      </div>
 
       <div class="action-row" id="action-row">
         <button class="btn-discard" onclick="discard()">Discard</button>
@@ -569,239 +605,222 @@ animation: dots 1.2s steps(3, end) infinite;
 
       <div class="error-msg" id="error-msg"></div>
     </div>
-  </div>
 
-  <!-- ENTRY VIEW -->
-  <div id="view-entry" class="view">
-    <button class="back-btn" onclick="switchView('archive')">← Archive</button>
-    <div class="entry-meta" id="entry-meta"></div>
-    <div class="entry-raw" id="entry-raw"></div>
-    <div class="reflection-block">
-      <div class="reflection-label">Claude's Reflection</div>
+    <!-- ENTRY -->
+    <div id="view-entry" class="view">
+      <button class="back-btn" onclick="switchView('archive')">← Archive</button>
+      <div class="entry-meta" id="entry-meta"></div>
+      <div class="entry-raw" id="entry-raw"></div>
+      <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+      <div class="reflection-label">Reflection</div>
       <div class="reflection-text" id="entry-reflection"></div>
     </div>
-  </div>
 
-  <!-- ARCHIVE VIEW -->
-  <div id="view-archive" class="view">
-    <input class="search-input" id="search-input" placeholder="Search entries…" oninput="renderArchive()" />
-    <div id="archive-list"></div>
-  </div>
-
-</main>
-```
-
-  </div>
+    <!-- ARCHIVE -->
+    <div id="view-archive" class="view">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-input" placeholder="Search entries…" oninput="renderArchive()" />
+      </div>
+      <div class="archive-list" id="archive-list"></div>
+    </div>
+  </main>
 </div>
 
 <script>
-// ─── State ────────────────────────────────────────────────────────────────────
+let entries = [];
 let recognition = null;
 let isRecording = false;
-let finalTranscript = '';
-let interimTranscript = '';
-let entries = [];
+let finalT = '';
+let interimT = '';
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  const key = localStorage.getItem('memoir_api_key');
   entries = JSON.parse(localStorage.getItem('memoir_entries') || '[]');
-
   document.getElementById('header-date').textContent =
-    new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-  if (key) showApp();
-
-  document.getElementById('save-key-btn').addEventListener('click', () => {
-    const k = document.getElementById('api-key-input').value.trim();
-    if (!k.startsWith('sk-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-...).'); return; }
-    localStorage.setItem('memoir_api_key', k);
-    showApp();
-  });
-
-  document.getElementById('api-key-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('save-key-btn').click();
-  });
+    new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  if (localStorage.getItem('memoir_key')) showApp();
+  document.getElementById('setup-btn').addEventListener('click', saveKey);
+  document.getElementById('api-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
 });
 
+function saveKey() {
+  const k = document.getElementById('api-input').value.trim();
+  if (!k.startsWith('sk-')) { alert('Please enter a valid Anthropic API key.'); return; }
+  localStorage.setItem('memoir_key', k);
+  showApp();
+}
+
 function showApp() {
-  document.getElementById('setup-screen').style.display = 'none';
-  const app = document.getElementById('main-app');
-  app.style.display = 'flex';
+  document.getElementById('setup').style.display = 'none';
+  const a = document.getElementById('app');
+  a.style.display = 'flex';
+  a.style.flexDirection = 'column';
 }
 
 function resetKey() {
-  if (confirm('Change your API key?')) {
-    localStorage.removeItem('memoir_api_key');
-    document.getElementById('main-app').style.display = 'none';
-    document.getElementById('setup-screen').style.display = 'flex';
-    document.getElementById('api-key-input').value = '';
-  }
+  if (!confirm('Change your API key?')) return;
+  localStorage.removeItem('memoir_key');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+  document.getElementById('api-input').value = '';
 }
 
-// ─── View Switching ───────────────────────────────────────────────────────────
 function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
-  document.querySelectorAll('nav button[data-view]').forEach(b => {
-    b.classList.toggle('active', b.dataset.view === name);
-  });
+  document.querySelectorAll('.nav-btn[data-view]').forEach(b =>
+    b.classList.toggle('active', b.dataset.view === name)
+  );
   if (name === 'archive') renderArchive();
 }
 
-// ─── Speech Recognition ───────────────────────────────────────────────────────
-function toggleRecording() {
-  if (isRecording) stopRecording();
-  else startRecording();
-}
+function toggleRec() { if (isRecording) stopRec(); else startRec(); }
 
-function startRecording() {
+function startRec() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    setError('Speech recognition not supported. Try Chrome or Edge.');
-    return;
-  }
+  if (!SR) { setError('Speech recognition not supported. Try Chrome.'); return; }
   setError('');
-  finalTranscript = '';
-  interimTranscript = '';
-  renderTranscript('', '');
+  finalT = ''; interimT = '';
+  renderTranscript();
 
   recognition = new SR();
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
-
-  recognition.onstart = () => setRecordingState(true);
-
+  recognition.onstart = () => setRecState(true);
   recognition.onresult = (e) => {
-    interimTranscript = '';
+    interimT = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) finalTranscript += t + ' ';
-      else interimTranscript = t;
+      if (e.results[i].isFinal) finalT += e.results[i][0].transcript + ' ';
+      else interimT = e.results[i][0].transcript;
     }
-    renderTranscript(finalTranscript, interimTranscript);
+    renderTranscript();
   };
-
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') setError('Microphone access denied. Please allow mic access in your browser.');
-    else if (e.error !== 'aborted') setError('Mic error: ' + e.error);
-    setRecordingState(false);
+    if (e.error === 'not-allowed') setError('Mic access denied. Allow microphone in browser settings.');
+    else if (e.error !== 'aborted') setError('Error: ' + e.error);
+    setRecState(false);
   };
-
-  recognition.onend = () => setRecordingState(false);
-
+  recognition.onend = () => setRecState(false);
   recognition.start();
 }
 
-function stopRecording() {
-  recognition && recognition.stop();
-  setRecordingState(false);
-}
+function stopRec() { recognition && recognition.stop(); setRecState(false); }
 
-function setRecordingState(active) {
+function setRecState(active) {
   isRecording = active;
-  const btn = document.getElementById('mic-btn');
-  const waveform = document.getElementById('waveform');
-  const hint = document.getElementById('record-hint');
-  const rings = [document.getElementById('ring1'), document.getElementById('ring2'), document.getElementById('ring3')];
-
-  btn.textContent = active ? '⏹' : '🎙';
-  btn.classList.toggle('recording', active);
-  waveform.classList.toggle('active', active);
-  rings.forEach(r => r.classList.toggle('active', active));
-
+  document.getElementById('mic-stage').classList.toggle('recording', active);
+  document.getElementById('waveform').classList.toggle('active', active);
+  const hint = document.getElementById('hint');
+  hint.classList.toggle('listening', active);
+  document.getElementById('mic-label').textContent = active ? 'stop' : 'speak';
   if (active) {
-    hint.textContent = 'Listening… tap again to stop.';
+    hint.textContent = 'Listening…';
   } else {
-    const hasText = finalTranscript.trim().length > 0;
-    hint.textContent = hasText ? 'Here\'s what I heard. Confirm or re-record.' : 'Tap the mic and speak freely.';
+    hint.textContent = finalT.trim().length > 0 ? "Here's what I heard." : 'Tap to begin.';
   }
-
   updateActions();
 }
 
-function renderTranscript(final, interim) {
+function renderTranscript() {
   const box = document.getElementById('transcript-box');
-  const wc = document.getElementById('word-count');
-  const hasContent = (final + interim).trim().length > 0;
-
-  box.classList.toggle('visible', hasContent);
-
-  if (hasContent) {
-    box.innerHTML = final +
-      (interim ? `<span class="interim">${interim}</span>` : '');
-    const words = (final + interim).trim().split(/\s+/).filter(Boolean).length;
-    wc.textContent = words + ' words';
-    wc.style.display = 'block';
+  const footer = document.getElementById('transcript-footer');
+  const combined = (finalT + interimT).trim();
+  if (combined) {
+    box.classList.add('show');
+    footer.classList.add('show');
+    box.innerHTML = escHtml(finalT) + (interimT ? `<span class="interim-text">${escHtml(interimT)}</span>` : '');
+    document.getElementById('word-count').textContent = combined.split(/\s+/).filter(Boolean).length + ' words';
   } else {
-    box.innerHTML = '';
-    wc.style.display = 'none';
+    box.classList.remove('show');
+    footer.classList.remove('show');
   }
   updateActions();
 }
 
 function updateActions() {
-  const row = document.getElementById('action-row');
-  const hasText = finalTranscript.trim().length > 0;
-  row.classList.toggle('visible', hasText && !isRecording);
+  document.getElementById('action-row').classList.toggle('show', finalT.trim().length > 0 && !isRecording);
 }
 
 function discard() {
-  finalTranscript = '';
-  interimTranscript = '';
-  renderTranscript('', '');
-  document.getElementById('record-hint').textContent = 'Tap the mic and speak freely.';
+  finalT = ''; interimT = '';
+  renderTranscript();
+  const hint = document.getElementById('hint');
+  hint.textContent = 'Tap to begin.';
+  hint.classList.remove('listening');
   setError('');
 }
 
-function setError(msg) {
-  document.getElementById('error-msg').textContent = msg;
+function setError(msg) { document.getElementById('error-msg').textContent = msg; }
+
+const NOTION_TOKEN = 'ntn_g881131012258xL6aX64IFmrbZZdcm79sPkPSqemygOeAM';
+const NOTION_DB    = '33b20d31ec2a805ba0c9d0ac1f4952c0';
+async function saveToNotion(entry) {
+  // Generate a short title from first few words
+  const title = entry.raw.split(' ').slice(0, 6).join(' ') + '…';
+  const body = {
+    parent: { database_id: NOTION_DB },
+    properties: {
+      Name: { title: [{ text: { content: title } }] },
+      Date: { date: { start: entry.date } },
+      Transcript: { rich_text: [{ text: { content: entry.raw } }] },
+      Reflection: { rich_text: [{ text: { content: entry.reflection } }] }
+    }
+  };
+
+  // Use a CORS proxy since browsers can't call Notion API directly
+  const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.notion.com/v1/pages'), {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + NOTION_TOKEN,
+      'Content-Type': 'application/json',
+      'Notion-Version': '2022-06-28'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.warn('Notion save failed:', err.message || res.status);
+    // Don't throw — local save still works
+  }
 }
 
-// ─── Submit ───────────────────────────────────────────────────────────────────
 async function submitEntry() {
-  const text = finalTranscript.trim();
+  const text = finalT.trim();
   if (!text) return;
-
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.innerHTML = 'Reflecting<span class="loading-dots"></span>';
 
   try {
-    const reflection = await askClaude(text);
-    const entry = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      raw: text,
-      reflection
-    };
+    const reflection = await getReflection(text);
+    const entry = { id: Date.now(), date: new Date().toISOString(), raw: text, reflection };
     entries.unshift(entry);
     localStorage.setItem('memoir_entries', JSON.stringify(entries));
+
+    // Save to Notion in background — non-blocking
+    saveToNotion(entry).catch(e => console.warn('Notion:', e));
+
     discard();
     showEntry(entry);
-  } catch (err) {
-    setError('Error: ' + (err.message || 'Something went wrong.'));
-  }
+  } catch (err) { setError(err.message || 'Something went wrong.'); }
 
   btn.disabled = false;
   btn.innerHTML = 'Save &amp; Reflect →';
 }
 
-async function askClaude(text) {
-  const apiKey = localStorage.getItem('memoir_api_key');
-  const recent = entries.slice(0, 5);
-  const pastContext = recent.length > 0
-    ? 'Past entries:\n' + recent.map(e => `[${fmtDate(e.date)}]: ${e.raw}`).join('\n\n') + '\n\n'
-    : '';
-
-  const prompt = `${pastContext}Today's spoken journal entry:\n"${text}"\n\nYou are a warm, perceptive journal companion. Respond with exactly three labeled sections:\n\n**Reflection:** (2-3 empathetic sentences)\n\n**Pattern:** (one insight or recurring theme, referencing past entries if relevant)\n\n**Question:** (one gentle, open question to carry forward)\n\nBe concise and human.`;
+async function getReflection(text) {
+  const key = localStorage.getItem('memoir_key');
+  const past = entries.slice(0, 5);
+  const ctx = past.length ? 'Past entries:\n' + past.map(e => `[${fmtDate(e.date)}]: ${e.raw}`).join('\n\n') + '\n\n' : '';
+  const prompt = `${ctx}Today's spoken journal entry:\n"${text}"\n\nYou are a warm, perceptive journal companion. Respond with exactly three labeled sections:\n\n**Reflection:** (2-3 empathetic sentences)\n\n**Pattern:** (one insight or recurring theme, referencing past entries if relevant)\n\n**Question:** (one gentle, open question to carry forward)\n\nBe concise and human. No filler.`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
+      'x-api-key': key,
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
@@ -816,57 +835,40 @@ async function askClaude(text) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error?.message || 'API error ' + res.status);
   }
-
   const data = await res.json();
   return data.content?.find(b => b.type === 'text')?.text || 'No response.';
 }
 
-// ─── Entry View ───────────────────────────────────────────────────────────────
 function showEntry(entry) {
-  document.getElementById('entry-meta').textContent =
-    fmtDate(entry.date) + ' · ' + fmtTime(entry.date);
+  document.getElementById('entry-meta').textContent = fmtDate(entry.date) + ' · ' + fmtTime(entry.date);
   document.getElementById('entry-raw').textContent = entry.raw;
   document.getElementById('entry-reflection').textContent = entry.reflection;
   switchView('entry');
 }
 
-// ─── Archive ──────────────────────────────────────────────────────────────────
 function renderArchive() {
   const q = (document.getElementById('search-input').value || '').toLowerCase();
+  const list = document.getElementById('archive-list');
   const filtered = entries.filter(e =>
     e.raw.toLowerCase().includes(q) || (e.reflection || '').toLowerCase().includes(q)
   );
-
-  const list = document.getElementById('archive-list');
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-state">${entries.length === 0 ? 'No entries yet. Record your first one.' : 'No results.'}</div>`;
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">${entries.length ? 'No results.' : 'No entries yet.'}</div>`;
     return;
   }
-
   list.innerHTML = filtered.map(e => `
-    <div class="entry-card" onclick='openEntry(${e.id})'>
+    <div class="entry-card" onclick="openEntry(${e.id})">
       <div class="card-date">${fmtDate(e.date)} · ${fmtTime(e.date)}</div>
       <div class="card-preview">${escHtml(e.raw)}</div>
     </div>
   `).join('');
 }
 
-function openEntry(id) {
-  const entry = entries.find(e => e.id === id);
-  if (entry) showEntry(entry);
-}
+function openEntry(id) { const e = entries.find(e => e.id === id); if (e) showEntry(e); }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-}
-function fmtTime(iso) {
-  return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }); }
+function fmtTime(iso) { return new Date(iso).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }); }
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
-
 </body>
 </html>

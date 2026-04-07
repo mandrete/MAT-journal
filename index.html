@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memoir — Voice Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–bg: #0b0a09;
+–surface: #141210;
+–surface2: #1c1916;
+–border: #252018;
+–border2: #352d20;
+–text: #e2d8cc;
+–text2: #9a8a78;
+–text3: #5a5048;
+–accent: #c8a878;
+–accent2: #8a6030;
+–danger: #8a4030;
+}
+
+html, body {
+height: 100%;
+background: var(–bg);
+color: var(–text);
+font-family: ‘Cormorant Garamond’, Georgia, serif;
+font-size: 17px;
+line-height: 1.6;
+-webkit-font-smoothing: antialiased;
+}
+
+/* Grain overlay */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.04’/%3E%3C/svg%3E”);
+pointer-events: none;
+z-index: 999;
+opacity: 0.5;
+}
+
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* API KEY SETUP SCREEN */
+#setup-screen {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+padding: 40px 24px;
+animation: fadeIn 0.6s ease;
+}
+
+.setup-card {
+max-width: 480px;
+width: 100%;
+background: var(–surface);
+border: 1px solid var(–border2);
+border-radius: 12px;
+padding: 48px 40px;
+}
+
+.setup-card .logo {
+font-size: 28px;
+font-weight: 300;
+letter-spacing: 2px;
+color: var(–accent);
+margin-bottom: 8px;
+}
+
+.setup-card .tagline {
+font-size: 14px;
+color: var(–text3);
+font-family: ‘DM Mono’, monospace;
+letter-spacing: 1px;
+margin-bottom: 36px;
+}
+
+.setup-card p {
+font-size: 15px;
+color: var(–text2);
+line-height: 1.7;
+margin-bottom: 24px;
+}
+
+.setup-card a { color: var(–accent); text-decoration: none; border-bottom: 1px solid var(–accent2); }
+
+.field-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+letter-spacing: 2px;
+color: var(–text3);
+text-transform: uppercase;
+margin-bottom: 8px;
+}
+
+.api-input {
+width: 100%;
+background: var(–bg);
+border: 1px solid var(–border2);
+border-radius: 6px;
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+font-size: 13px;
+padding: 12px 16px;
+outline: none;
+margin-bottom: 20px;
+transition: border-color 0.2s;
+}
+.api-input:focus { border-color: var(–accent2); }
+
+.btn-primary {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border2);
+color: var(–accent);
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 16px;
+letter-spacing: 1px;
+padding: 13px;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s;
+}
+.btn-primary:hover { background: #241e14; border-color: var(–accent2); }
+
+.setup-note {
+margin-top: 20px;
+font-size: 12px;
+color: var(–text3);
+font-family: ‘DM Mono’, monospace;
+line-height: 1.6;
+}
+
+/* MAIN LAYOUT */
+header {
+padding: 22px 32px 18px;
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: center;
+justify-content: space-between;
+animation: fadeIn 0.4s ease;
+}
+
+.header-left .date {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–text3);
+text-transform: uppercase;
+margin-bottom: 3px;
+}
+
+.header-left h1 {
+font-size: 22px;
+font-weight: 300;
+letter-spacing: 2px;
+color: var(–accent);
+}
+
+nav { display: flex; gap: 6px; }
+
+nav button {
+background: transparent;
+border: 1px solid transparent;
+color: var(–text3);
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+letter-spacing: 2px;
+text-transform: uppercase;
+padding: 6px 14px;
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.15s;
+}
+nav button.active {
+background: var(–surface2);
+border-color: var(–border2);
+color: var(–accent);
+}
+nav button:hover:not(.active) { color: var(–text2); }
+
+main {
+flex: 1;
+max-width: 680px;
+width: 100%;
+margin: 0 auto;
+padding: 44px 32px;
+animation: fadeIn 0.4s ease;
+}
+
+/* VIEWS */
+.view { display: none; }
+.view.active { display: block; }
+
+/* RECORD VIEW */
+.record-center {
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+.record-hint {
+font-size: 15px;
+color: var(–text3);
+text-align: center;
+margin-bottom: 52px;
+min-height: 28px;
+font-style: italic;
+transition: color 0.3s;
+}
+
+/* Mic button */
+.mic-wrap {
+position: relative;
+width: 130px;
+height: 130px;
+margin-bottom: 44px;
+}
+
+.pulse-ring {
+position: absolute;
+inset: 0;
+border-radius: 50%;
+border: 1px solid rgba(200, 168, 120, 0.25);
+animation: none;
+}
+.pulse-ring.active { animation: pulseOut 1.4s ease-out infinite; }
+.pulse-ring:nth-child(2).active { animation-delay: 0.45s; }
+.pulse-ring:nth-child(3).active { animation-delay: 0.9s; }
+
+@keyframes pulseOut {
+0% { transform: scale(1); opacity: 0.5; }
+100% { transform: scale(2.4); opacity: 0; }
+}
+
+#mic-btn {
+position: absolute;
+inset: 0;
+border-radius: 50%;
+background: var(–surface);
+border: 2px solid var(–border2);
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 42px;
+transition: all 0.2s;
+z-index: 1;
+}
+#mic-btn:hover { background: var(–surface2); border-color: var(–accent2); }
+#mic-btn.recording {
+background: #1e1008;
+border-color: #7a4020;
+box-shadow: 0 0 40px rgba(160, 70, 20, 0.15);
+}
+
+/* Waveform bars */
+.waveform {
+display: flex;
+align-items: center;
+gap: 4px;
+height: 32px;
+margin-bottom: 28px;
+opacity: 0;
+transition: opacity 0.3s;
+}
+.waveform.active { opacity: 1; }
+.wave-bar {
+width: 3px;
+background: var(–accent2);
+border-radius: 2px;
+animation: none;
+height: 4px;
+}
+.waveform.active .wave-bar { animation: wave 0.8s ease-in-out infinite alternate; }
+.wave-bar:nth-child(1) { animation-delay: 0s; }
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { animation-delay: 0.15s; }
+.wave-bar:nth-child(6) { animation-delay: 0.05s; }
+.wave-bar:nth-child(7) { animation-delay: 0.25s; }
+.wave-bar:nth-child(8) { animation-delay: 0.35s; }
+.wave-bar:nth-child(9) { animation-delay: 0.1s; }
+
+@keyframes wave {
+from { height: 4px; }
+to { height: 28px; }
+}
+
+/* Transcript box */
+#transcript-box {
+width: 100%;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 22px;
+font-size: 16px;
+line-height: 1.8;
+color: #c8c0b4;
+min-height: 90px;
+white-space: pre-wrap;
+margin-bottom: 20px;
+display: none;
+}
+#transcript-box.visible { display: block; }
+#transcript-box .interim { color: var(–text3); font-style: italic; }
+
+.word-count {
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+color: var(–text3);
+margin-bottom: 14px;
+align-self: flex-start;
+}
+
+.action-row {
+display: flex;
+gap: 10px;
+width: 100%;
+display: none;
+}
+.action-row.visible { display: flex; }
+
+.btn-discard {
+flex: 1;
+background: transparent;
+border: 1px solid var(–border);
+color: var(–text3);
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 15px;
+padding: 11px;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.15s;
+}
+.btn-discard:hover { border-color: var(–border2); color: var(–text2); }
+
+.btn-submit {
+flex: 2;
+background: var(–surface2);
+border: 1px solid var(–border2);
+color: var(–accent);
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 16px;
+letter-spacing: 0.5px;
+padding: 11px;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s;
+}
+.btn-submit:hover:not(:disabled) { background: #241e12; border-color: #7a5828; }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.error-msg {
+color: #b05040;
+font-family: ‘DM Mono’, monospace;
+font-size: 12px;
+margin-top: 12px;
+text-align: center;
+}
+
+/* ENTRY VIEW */
+.back-btn {
+background: transparent;
+border: none;
+color: var(–text3);
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+letter-spacing: 2px;
+text-transform: uppercase;
+cursor: pointer;
+padding: 0 0 28px;
+display: flex;
+align-items: center;
+gap: 8px;
+transition: color 0.15s;
+}
+.back-btn:hover { color: var(–text2); }
+
+.entry-meta {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–text3);
+text-transform: uppercase;
+margin-bottom: 10px;
+}
+
+.entry-raw {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 24px;
+font-size: 16px;
+line-height: 1.85;
+color: #ccc0b0;
+white-space: pre-wrap;
+margin-bottom: 30px;
+}
+
+.reflection-block {
+border-left: 2px solid var(–accent2);
+padding-left: 24px;
+}
+
+.reflection-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–accent2);
+text-transform: uppercase;
+margin-bottom: 16px;
+}
+
+.reflection-text {
+font-size: 15px;
+line-height: 1.9;
+color: #a89878;
+white-space: pre-wrap;
+}
+
+/* ARCHIVE VIEW */
+.search-input {
+width: 100%;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+font-size: 13px;
+padding: 11px 16px;
+outline: none;
+margin-bottom: 24px;
+transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(–border2); }
+
+.entry-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 18px 22px;
+cursor: pointer;
+margin-bottom: 10px;
+transition: all 0.15s;
+}
+.entry-card:hover { background: var(–surface2); border-color: var(–border2); }
+
+.entry-card .card-date {
+font-family: ‘DM Mono’, monospace;
+font-size: 10px;
+letter-spacing: 2px;
+color: var(–text3);
+text-transform: uppercase;
+margin-bottom: 8px;
+}
+
+.entry-card .card-preview {
+font-size: 14px;
+color: var(–text2);
+line-height: 1.6;
+display: -webkit-box;
+-webkit-line-clamp: 2;
+-webkit-box-orient: vertical;
+overflow: hidden;
+}
+
+.empty-state {
+text-align: center;
+color: var(–text3);
+font-style: italic;
+margin-top: 60px;
+font-size: 16px;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(6px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-dots::after {
+content: ‘’;
+animation: dots 1.2s steps(3, end) infinite;
+}
+@keyframes dots {
+0%   { content: ‘’; }
+33%  { content: ‘.’; }
+66%  { content: ‘..’; }
+100% { content: ‘…’; }
+}
+</style>
+
+</head>
+<body>
+<div id="app">
+
+  <!-- SETUP SCREEN -->
+
+  <div id="setup-screen">
+    <div class="setup-card">
+      <div class="logo">Memoir</div>
+      <div class="tagline">voice journal</div>
+      <p>To reflect on your entries, Memoir needs your Anthropic API key. It's stored only in your browser — never sent anywhere except directly to Anthropic.</p>
+      <div class="field-label">Anthropic API Key</div>
+      <input class="api-input" id="api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      <button class="btn-primary" id="save-key-btn">Begin →</button>
+      <div class="setup-note">
+        Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+        Stored in localStorage. Never leaves your machine.
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+
+  <div id="main-app" style="display:none; flex-direction:column; min-height:100vh;">
+
+```
+<header>
+  <div class="header-left">
+    <div class="date" id="header-date"></div>
+    <h1>Memoir</h1>
+  </div>
+  <nav>
+    <button class="active" data-view="record" onclick="switchView('record')">● Record</button>
+    <button data-view="archive" onclick="switchView('archive')">Archive</button>
+    <button onclick="resetKey()" style="color:var(--text3);font-size:10px;opacity:0.5;" title="Change API key">⚙</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- RECORD VIEW -->
+  <div id="view-record" class="view active">
+    <div class="record-center">
+      <div class="record-hint" id="record-hint">Tap the mic and speak freely.</div>
+
+      <div class="mic-wrap">
+        <div class="pulse-ring" id="ring1"></div>
+        <div class="pulse-ring" id="ring2"></div>
+        <div class="pulse-ring" id="ring3"></div>
+        <button id="mic-btn" onclick="toggleRecording()">🎙</button>
+      </div>
+
+      <div class="waveform" id="waveform">
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+
+      <div id="transcript-box"></div>
+      <div class="word-count" id="word-count" style="display:none"></div>
+
+      <div class="action-row" id="action-row">
+        <button class="btn-discard" onclick="discard()">Discard</button>
+        <button class="btn-submit" id="submit-btn" onclick="submitEntry()">Save &amp; Reflect →</button>
+      </div>
+
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ENTRY VIEW -->
+  <div id="view-entry" class="view">
+    <button class="back-btn" onclick="switchView('archive')">← Archive</button>
+    <div class="entry-meta" id="entry-meta"></div>
+    <div class="entry-raw" id="entry-raw"></div>
+    <div class="reflection-block">
+      <div class="reflection-label">Claude's Reflection</div>
+      <div class="reflection-text" id="entry-reflection"></div>
+    </div>
+  </div>
+
+  <!-- ARCHIVE VIEW -->
+  <div id="view-archive" class="view">
+    <input class="search-input" id="search-input" placeholder="Search entries…" oninput="renderArchive()" />
+    <div id="archive-list"></div>
+  </div>
+
+</main>
+```
+
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let recognition = null;
+let isRecording = false;
+let finalTranscript = '';
+let interimTranscript = '';
+let entries = [];
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const key = localStorage.getItem('memoir_api_key');
+  entries = JSON.parse(localStorage.getItem('memoir_entries') || '[]');
+
+  document.getElementById('header-date').textContent =
+    new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  if (key) showApp();
+
+  document.getElementById('save-key-btn').addEventListener('click', () => {
+    const k = document.getElementById('api-key-input').value.trim();
+    if (!k.startsWith('sk-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-...).'); return; }
+    localStorage.setItem('memoir_api_key', k);
+    showApp();
+  });
+
+  document.getElementById('api-key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('save-key-btn').click();
+  });
+});
+
+function showApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  const app = document.getElementById('main-app');
+  app.style.display = 'flex';
+}
+
+function resetKey() {
+  if (confirm('Change your API key?')) {
+    localStorage.removeItem('memoir_api_key');
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('setup-screen').style.display = 'flex';
+    document.getElementById('api-key-input').value = '';
+  }
+}
+
+// ─── View Switching ───────────────────────────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('nav button[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === name);
+  });
+  if (name === 'archive') renderArchive();
+}
+
+// ─── Speech Recognition ───────────────────────────────────────────────────────
+function toggleRecording() {
+  if (isRecording) stopRecording();
+  else startRecording();
+}
+
+function startRecording() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    setError('Speech recognition not supported. Try Chrome or Edge.');
+    return;
+  }
+  setError('');
+  finalTranscript = '';
+  interimTranscript = '';
+  renderTranscript('', '');
+
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onstart = () => setRecordingState(true);
+
+  recognition.onresult = (e) => {
+    interimTranscript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalTranscript += t + ' ';
+      else interimTranscript = t;
+    }
+    renderTranscript(finalTranscript, interimTranscript);
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') setError('Microphone access denied. Please allow mic access in your browser.');
+    else if (e.error !== 'aborted') setError('Mic error: ' + e.error);
+    setRecordingState(false);
+  };
+
+  recognition.onend = () => setRecordingState(false);
+
+  recognition.start();
+}
+
+function stopRecording() {
+  recognition && recognition.stop();
+  setRecordingState(false);
+}
+
+function setRecordingState(active) {
+  isRecording = active;
+  const btn = document.getElementById('mic-btn');
+  const waveform = document.getElementById('waveform');
+  const hint = document.getElementById('record-hint');
+  const rings = [document.getElementById('ring1'), document.getElementById('ring2'), document.getElementById('ring3')];
+
+  btn.textContent = active ? '⏹' : '🎙';
+  btn.classList.toggle('recording', active);
+  waveform.classList.toggle('active', active);
+  rings.forEach(r => r.classList.toggle('active', active));
+
+  if (active) {
+    hint.textContent = 'Listening… tap again to stop.';
+  } else {
+    const hasText = finalTranscript.trim().length > 0;
+    hint.textContent = hasText ? 'Here\'s what I heard. Confirm or re-record.' : 'Tap the mic and speak freely.';
+  }
+
+  updateActions();
+}
+
+function renderTranscript(final, interim) {
+  const box = document.getElementById('transcript-box');
+  const wc = document.getElementById('word-count');
+  const hasContent = (final + interim).trim().length > 0;
+
+  box.classList.toggle('visible', hasContent);
+
+  if (hasContent) {
+    box.innerHTML = final +
+      (interim ? `<span class="interim">${interim}</span>` : '');
+    const words = (final + interim).trim().split(/\s+/).filter(Boolean).length;
+    wc.textContent = words + ' words';
+    wc.style.display = 'block';
+  } else {
+    box.innerHTML = '';
+    wc.style.display = 'none';
+  }
+  updateActions();
+}
+
+function updateActions() {
+  const row = document.getElementById('action-row');
+  const hasText = finalTranscript.trim().length > 0;
+  row.classList.toggle('visible', hasText && !isRecording);
+}
+
+function discard() {
+  finalTranscript = '';
+  interimTranscript = '';
+  renderTranscript('', '');
+  document.getElementById('record-hint').textContent = 'Tap the mic and speak freely.';
+  setError('');
+}
+
+function setError(msg) {
+  document.getElementById('error-msg').textContent = msg;
+}
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
+async function submitEntry() {
+  const text = finalTranscript.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = 'Reflecting<span class="loading-dots"></span>';
+
+  try {
+    const reflection = await askClaude(text);
+    const entry = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      raw: text,
+      reflection
+    };
+    entries.unshift(entry);
+    localStorage.setItem('memoir_entries', JSON.stringify(entries));
+    discard();
+    showEntry(entry);
+  } catch (err) {
+    setError('Error: ' + (err.message || 'Something went wrong.'));
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Save &amp; Reflect →';
+}
+
+async function askClaude(text) {
+  const apiKey = localStorage.getItem('memoir_api_key');
+  const recent = entries.slice(0, 5);
+  const pastContext = recent.length > 0
+    ? 'Past entries:\n' + recent.map(e => `[${fmtDate(e.date)}]: ${e.raw}`).join('\n\n') + '\n\n'
+    : '';
+
+  const prompt = `${pastContext}Today's spoken journal entry:\n"${text}"\n\nYou are a warm, perceptive journal companion. Respond with exactly three labeled sections:\n\n**Reflection:** (2-3 empathetic sentences)\n\n**Pattern:** (one insight or recurring theme, referencing past entries if relevant)\n\n**Question:** (one gentle, open question to carry forward)\n\nBe concise and human.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + res.status);
+  }
+
+  const data = await res.json();
+  return data.content?.find(b => b.type === 'text')?.text || 'No response.';
+}
+
+// ─── Entry View ───────────────────────────────────────────────────────────────
+function showEntry(entry) {
+  document.getElementById('entry-meta').textContent =
+    fmtDate(entry.date) + ' · ' + fmtTime(entry.date);
+  document.getElementById('entry-raw').textContent = entry.raw;
+  document.getElementById('entry-reflection').textContent = entry.reflection;
+  switchView('entry');
+}
+
+// ─── Archive ──────────────────────────────────────────────────────────────────
+function renderArchive() {
+  const q = (document.getElementById('search-input').value || '').toLowerCase();
+  const filtered = entries.filter(e =>
+    e.raw.toLowerCase().includes(q) || (e.reflection || '').toLowerCase().includes(q)
+  );
+
+  const list = document.getElementById('archive-list');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">${entries.length === 0 ? 'No entries yet. Record your first one.' : 'No results.'}</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => `
+    <div class="entry-card" onclick='openEntry(${e.id})'>
+      <div class="card-date">${fmtDate(e.date)} · ${fmtTime(e.date)}</div>
+      <div class="card-preview">${escHtml(e.raw)}</div>
+    </div>
+  `).join('');
+}
+
+function openEntry(id) {
+  const entry = entries.find(e => e.id === id);
+  if (entry) showEntry(entry);
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+
+</body>
+</html>
